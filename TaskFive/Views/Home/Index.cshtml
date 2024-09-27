@@ -1,0 +1,100 @@
+﻿@model IEnumerable<Record>;
+@{
+    int i = 0;
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container">
+    <h1>Task Five</h1>
+    <form class="form-check" asp-controller="" asp-action="">
+        <div class="d-flex align-items-center justify-content-between">
+            <label>Region</label>
+            <select name="region">
+                <option value="america">America</option>
+                <option value="mexico">Mexico</option>
+                <option value="canada">Canada</option>
+            </select>
+            <label>Error per Record</label>
+            <input name="error" id="input" type="range" min="0" max="1000"/>
+            <span id="value"></span>
+            <label>Random Seed</label>
+            <input name="seed" type="number"/>
+            <button id="button" class="btn btn-primary">Generate</button>
+        </div>
+    </form>
+    <table class="table table-striped w-100 mt-3">
+        <tbody id="table">
+            <tr>
+                <th>Index</th>
+                <th>Random identifier</th>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Phone</th>
+            </tr>
+            @foreach (var record in Model)
+            {
+                <tr>
+                    <td>@(i ++)</td>
+                    <td>@record.RandomIdentifier</td>
+                    <td>@record.Name</td>
+                    <td>@record.Adress</td>
+                    <td>@record.Phone</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    
+    <div id="loading"></div>
+    <script>
+        const value = document.querySelector("#value");
+        const input = document.querySelector("#input");
+        value.textContent = input.value;
+        input.addEventListener("input", (event) => {
+        value.textContent = event.target.value;
+        });
+
+    </script>
+    <script>
+        let i = 20;
+
+        let isLoading = false;
+
+        const loadingContainer = document.querySelector("#loading");
+
+        const table = document.querySelector("#table");
+        
+        function Loop(data) {
+            for (let record of data) {
+                let row = document.createElement("tr");
+                row.appendChild(document.createElement("td")).textContent = i++;
+                row.appendChild(document.createElement("td")).textContent = record.randomIdentifier;
+                row.appendChild(document.createElement("td")).textContent = record.name;    
+                row.appendChild(document.createElement("td")).textContent = record.adress;
+                row.appendChild(document.createElement("td")).textContent = record.phone;
+                
+                table. appendChild(row);
+            }
+        }
+
+        async function Scroll() {
+            if (isLoading) return;
+            isLoading = true;
+            loadingContainer.innerHTML = "Loading ...";
+            await fetch("/Home/ApiCall", {method: "POST"})
+                .then(response => response.json())
+                .then(data => {
+                    Loop(data);
+                    isLoading = false;
+                    loadingContainer.innerHTML = "";
+                });
+        }
+
+        window.addEventListener("scroll", (event) => {
+            if (isLoading) return;
+            if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight) {
+                Scroll();
+            }
+        });
+
+    </script>
+</div>
